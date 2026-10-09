@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc Nghiệm Ngữ Pháp TOEIC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Light green background */
+        }
+        .option-label {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .option-label:hover {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        <header class="bg-white rounded-2xl shadow-lg p-6 mb-8 text-center sticky top-4 z-20 border-t-4 border-green-500">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-green-700 mb-2">100 CÂU TRẮC NGHIỆM NGỮ PHÁP TIẾNG ANH</h1>
+            <p class="text-gray-600 text-sm md:text-base mb-2">Định dạng: TOEIC Reading Part 5</p>
+            <p class="text-xs text-gray-500 italic mb-4">Chủ điểm: Gerund/Infinitive, Tenses, Passive Voice, If clause, Reported Speech, Relative Clause</p>
+            
+            <div class="flex flex-wrap justify-center gap-2 mb-4" id="examSelector">
+                <!-- Exam buttons injected here -->
+            </div>
+
+            <div class="flex justify-between items-center bg-green-50 p-3 rounded-xl border border-green-200">
+                <span class="font-semibold text-green-800" id="totalQuestionsInfo">Đang tải...</span>
+                <span class="font-semibold text-green-800">0.1 điểm / câu</span>
+            </div>
+            
+            <div id="scoreDisplay" class="hidden mt-4 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-800 p-4 rounded shadow-sm text-left transition-all duration-500" role="alert">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <strong class="font-bold text-lg">Kết quả bài làm:</strong>
+                </div>
+                <p class="mt-2 text-md" id="scoreText"></p>
+            </div>
+        </header>
+
+        <form id="quizForm" class="space-y-6">
+            <div id="questionsContainer" class="space-y-6"></div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-lg text-center mt-8 sticky bottom-4 z-10 flex justify-center flex-wrap gap-4 border-t border-gray-100">
+                <button type="submit" id="submitBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transform transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-green-300 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Nộp Bài
+                </button>
+                <button type="button" id="resetBtn" class="hidden bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-xl shadow-md transform transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                    Làm Lại Đề Này
+                </button>
+                <button type="button" id="nextExamBtn" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transform transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center">
+                    Làm Đề Tiếp Theo
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Parsed data from the provided TOEIC document
+        const quizData = [
+            {"q": "The management expects the new policy _____ productivity by 15%.", "opts": ["to increase", "increasing", "increase", "increased"], "ans": 0},
+            {"q": "We are considering _____ a new branch in Da Nang next year.", "opts": ["open", "to open", "opening", "opened"], "ans": 2},
+            {"q": "Mr. Smith decided _____ the job offer due to the low salary.", "opts": ["declining", "to decline", "decline", "declined"], "ans": 1},
+            {"q": "Please avoid _____ personal phone calls during working hours.", "opts": ["making", "to make", "make", "made"], "ans": 0},
+            {"q": "The technician advised us _____ the software immediately.", "opts": ["updating", "update", "to update", "updated"], "ans": 2},
+            {"q": "I look forward to _____ from you soon.", "opts": ["hear", "hearing", "to hear", "heard"], "ans": 1},
+            {"q": "They plan _____ the construction project before December.", "opts": ["finish", "finishing", "to finish", "finished"], "ans": 2},
+            {"q": "Do you mind _____ the door for me?", "opts": ["to open", "open", "opening", "opened"], "ans": 2},
+            {"q": "We appreciate your _____ us with this important task.", "opts": ["help", "to help", "helped", "helping"], "ans": 3},
+            {"q": "She refused _____ the document without consulting her lawyer.", "opts": ["signing", "sign", "to sign", "signed"], "ans": 2},
+            {"q": "The company promised _____ all defective products.", "opts": ["replace", "to replace", "replacing", "replaced"], "ans": 1},
+            {"q": "It is important _____ the safety guidelines at all times.", "opts": ["to follow", "following", "follow", "followed"], "ans": 0},
+            {"q": "He suggested _____ the meeting until next week.", "opts": ["postpone", "to postpone", "postponing", "postponed"], "ans": 2},
+            {"q": "They failed _____ the deadline because of unexpected issues.", "opts": ["meeting", "to meet", "meet", "met"], "ans": 1},
+            {"q": "The manager encourages employees _____ in training programs.", "opts": ["participate", "participating", "to participate", "participated"], "ans": 2},
+            {"q": "She enjoys _____ books about marketing strategies.", "opts": ["to read", "read", "reading", "reads"], "ans": 2},
+            {"q": "We need _____ more staff for the upcoming holiday season.", "opts": ["to hire", "hiring", "hire", "hired"], "ans": 0},
+            {"q": "By the time we arrive at the station, the train _____.", "opts": ["has left", "will have left", "leaves", "left"], "ans": 1},
+            {"q": "Our company _____ its 10th anniversary next month.", "opts": ["is celebrating", "celebrated", "celebrates", "has celebrated"], "ans": 0},
+            {"q": "I _____ for this corporation since 2015.", "opts": ["am working", "work", "have been working", "worked"], "ans": 2},
+            {"q": "While he _____ the report, the power went out.", "opts": ["is typing", "was typing", "types", "has typed"], "ans": 1},
+            {"q": "The marketing team _____ a new campaign at the moment.", "opts": ["develops", "developed", "is developing", "has developed"], "ans": 2},
+            {"q": "They _____ the quarterly financial results yesterday.", "opts": ["announce", "have announced", "will announce", "announced"], "ans": 3},
+            {"q": "Before the manager arrived, the staff _____ everything.", "opts": ["prepared", "prepares", "had prepared", "has prepared"], "ans": 2},
+            {"q": "We usually _____ our weekly meetings on Monday mornings.", "opts": ["hold", "are holding", "held", "holds"], "ans": 0},
+            {"q": "By next year, they _____ the construction of the new bridge.", "opts": ["finish", "will have finished", "finished", "are finishing"], "ans": 1},
+            {"q": "Look at those dark clouds! It _____ soon.", "opts": ["rains", "will rain", "is going to rain", "rained"], "ans": 2},
+            {"q": "She _____ her keys; she can't find them anywhere.", "opts": ["loses", "lost", "has lost", "is losing"], "ans": 2},
+            {"q": "I _____ my boss at 3 PM tomorrow.", "opts": ["am meeting", "meet", "met", "have met"], "ans": 0},
+            {"q": "The committee _____ the proposal twice this week.", "opts": ["reviewed", "has reviewed", "is reviewing", "reviews"], "ans": 1},
+            {"q": "When I saw him, he _____ to a client on the phone.", "opts": ["talks", "is talking", "was talking", "talked"], "ans": 2},
+            {"q": "Next month, she _____ in this city for ten years.", "opts": ["will have lived", "lives", "has lived", "is living"], "ans": 0},
+            {"q": "He _____ a promotion after he completed the major project.", "opts": ["receives", "is receiving", "received", "has received"], "ans": 2},
+            {"q": "Water _____ at 100 degrees Celsius.", "opts": ["boil", "boils", "is boiling", "boiled"], "ans": 1},
+            {"q": "The final report must _____ by the end of the day.", "opts": ["submit", "be submitted", "submitted", "submitting"], "ans": 1},
+            {"q": "This application was _____ by our top software engineers.", "opts": ["developed", "develop", "developing", "develops"], "ans": 0},
+            {"q": "A new hospital _____ in the city center right now.", "opts": ["is building", "builds", "is being built", "has built"], "ans": 2},
+            {"q": "The documents _____ to your office tomorrow morning.", "opts": ["will deliver", "will be delivered", "deliver", "are delivering"], "ans": 1},
+            {"q": "All employees are required _____ uniform at the workplace.", "opts": ["wear", "wearing", "to be worn", "to wear"], "ans": 3},
+            {"q": "The packages _____ before 5 PM yesterday.", "opts": ["shipped", "were shipped", "are shipped", "have shipped"], "ans": 1},
+            {"q": "Many new policies _____ since the new CEO took over.", "opts": ["introduced", "have introduced", "have been introduced", "are introduced"], "ans": 2},
+            {"q": "The conference room _____ when I arrived.", "opts": ["is cleaned", "was being cleaned", "has cleaned", "cleaned"], "ans": 1},
+            {"q": "Customers will _____ about any changes in the schedule.", "opts": ["inform", "be informed", "informing", "informed"], "ans": 1},
+            {"q": "The budget proposal _____ by the finance committee next week.", "opts": ["will review", "is reviewing", "will be reviewed", "reviews"], "ans": 2},
+            {"q": "The error _____ by the IT department yesterday.", "opts": ["fixed", "was fixed", "is fixed", "has fixed"], "ans": 1},
+            {"q": "These products _____ in Germany.", "opts": ["are manufactured", "manufacture", "manufacturing", "manufactured"], "ans": 0},
+            {"q": "The winner of the contest _____ tomorrow.", "opts": ["will announce", "is announced", "will be announced", "announced"], "ans": 2},
+            {"q": "My car _____ at the garage right now.", "opts": ["repairs", "is repairing", "repaired", "is being repaired"], "ans": 3},
+            {"q": "The event _____ due to bad weather conditions.", "opts": ["was cancelled", "cancelled", "cancels", "is cancelling"], "ans": 0},
+            {"q": "Instructions should _____ carefully before using the machine.", "opts": ["read", "be read", "reading", "have read"], "ans": 1},
+            {"q": "The building _____ completely destroyed by the fire last year.", "opts": ["was", "is", "has been", "will be"], "ans": 0},
+            {"q": "If I _____ you, I would apply for that position.", "opts": ["am", "was", "were", "have been"], "ans": 2},
+            {"q": "If it rains tomorrow, we _____ the outdoor event.", "opts": ["cancel", "will cancel", "would cancel", "cancelled"], "ans": 1},
+            {"q": "Had I known about the meeting, I _____ earlier.", "opts": ["will come", "would come", "came", "would have come"], "ans": 3},
+            {"q": "If the client _____ the contract, we will start the project.", "opts": ["sign", "signs", "signed", "had signed"], "ans": 1},
+            {"q": "I would travel around the world if I _____ a million dollars.", "opts": ["win", "won", "will win", "had won"], "ans": 1},
+            {"q": "If she had studied harder, she _____ the exam.", "opts": ["would pass", "will pass", "would have passed", "passed"], "ans": 2},
+            {"q": "_____ you need any assistance, please contact our support team.", "opts": ["If", "Should", "Were", "Had"], "ans": 1},
+            {"q": "If the weather _____ better, we could have gone for a picnic.", "opts": ["is", "was", "were", "had been"], "ans": 3},
+            {"q": "We will give you a discount if you _____ in bulk.", "opts": ["order", "ordered", "ordering", "will order"], "ans": 0},
+            {"q": "If I had more time, I _____ an extra course.", "opts": ["take", "will take", "would take", "would have taken"], "ans": 2},
+            {"q": "_____ I in your shoes, I wouldn't accept that offer.", "opts": ["Am", "If", "Were", "Had"], "ans": 2},
+            {"q": "If he _____ his doctor's advice, he would be healthier now.", "opts": ["followed", "had followed", "follows", "has followed"], "ans": 1},
+            {"q": "Unless you _____ hard, you will fail the test.", "opts": ["try", "don't try", "tried", "didn't try"], "ans": 0},
+            {"q": "If the company _____ bankrupt, many people will lose their jobs.", "opts": ["go", "goes", "went", "had gone"], "ans": 1},
+            {"q": "If they hadn't been late, they _____ the flight.", "opts": ["wouldn't miss", "didn't miss", "wouldn't have missed", "won't miss"], "ans": 2},
+            {"q": "She could buy a new car if she _____ enough money.", "opts": ["saves", "saved", "had saved", "is saving"], "ans": 1},
+            {"q": "If you heat ice, it _____.", "opts": ["melts", "will melt", "melted", "would melt"], "ans": 0},
+            {"q": "He said that he _____ a new car the previous day.", "opts": ["bought", "buys", "had bought", "has bought"], "ans": 2},
+            {"q": "The manager asked me _____ I was ready to take on the project.", "opts": ["that", "whether", "what", "why"], "ans": 1},
+            {"q": "She told him _____ the documents on her desk.", "opts": ["leave", "to leave", "leaving", "left"], "ans": 1},
+            {"q": "They announced that the CEO _____ the next day.", "opts": ["will arrive", "would arrive", "arrives", "arrived"], "ans": 1},
+            {"q": "I wondered _____ he had left the meeting early.", "opts": ["why", "that", "what", "which"], "ans": 0},
+            {"q": "She asked me where I _____ from.", "opts": ["come", "am coming", "came", "will come"], "ans": 2},
+            {"q": "He promised that he _____ the task by Friday.", "opts": ["finishes", "will finish", "would finish", "finished"], "ans": 2},
+            {"q": "The receptionist advised me _____ my passport.", "opts": ["bringing", "to bring", "bring", "brought"], "ans": 1},
+            {"q": "She said she _____ a great time at the party then.", "opts": ["is having", "was having", "has", "had"], "ans": 1},
+            {"q": "My colleague told me that the system _____ upgraded recently.", "opts": ["was", "is", "had been", "has been"], "ans": 2},
+            {"q": "The teacher asked the students _____ talk during the exam.", "opts": ["not", "to not", "don't", "not to"], "ans": 3},
+            {"q": "He inquired _____ I had seen the new policy memo.", "opts": ["if", "that", "unless", "what"], "ans": 0},
+            {"q": "Sarah said that she _____ to Paris before.", "opts": ["has never been", "had never been", "never was", "is never"], "ans": 1},
+            {"q": "The boss told us _____ hard on the new project.", "opts": ["working", "work", "to work", "worked"], "ans": 2},
+            {"q": "She wanted to know _____ the train was delayed.", "opts": ["when", "why", "what", "who"], "ans": 1},
+            {"q": "He said, 'I can fix it.' -> He said that he _____ fix it.", "opts": ["can", "could", "will", "would"], "ans": 1},
+            {"q": "The man _____ is standing over there is our new director.", "opts": ["who", "whom", "which", "whose"], "ans": 0},
+            {"q": "The book _____ I borrowed from the library is very interesting.", "opts": ["who", "whom", "which", "whose"], "ans": 2},
+            {"q": "This is the company _____ products are sold worldwide.", "opts": ["who", "which", "that", "whose"], "ans": 3},
+            {"q": "Do you know the reason _____ she resigned?", "opts": ["when", "where", "why", "which"], "ans": 2},
+            {"q": "The building, _____ was constructed in 1920, is now a museum.", "opts": ["that", "which", "where", "who"], "ans": 1},
+            {"q": "The candidates _____ CVs are selected will be called for an interview.", "opts": ["who", "whose", "whom", "which"], "ans": 1},
+            {"q": "I visited the town _____ I grew up.", "opts": ["which", "when", "where", "that"], "ans": 2},
+            {"q": "The person to _____ you should send this form is Mr. Lee.", "opts": ["who", "whom", "which", "whose"], "ans": 1},
+            {"q": "She is the only employee _____ knows the password.", "opts": ["which", "who", "whom", "whose"], "ans": 1},
+            {"q": "The software _____ we installed yesterday crashed.", "opts": ["who", "whose", "whom", "that"], "ans": 3},
+            {"q": "I remember the day _____ we first met.", "opts": ["where", "which", "when", "why"], "ans": 2},
+            {"q": "Anyone _____ is interested in the course should sign up.", "opts": ["who", "which", "whom", "whose"], "ans": 0},
+            {"q": "My sister, _____ lives in New York, is a doctor.", "opts": ["that", "who", "which", "whom"], "ans": 1},
+            {"q": "The laptop _____ I bought last week is already broken.", "opts": ["who", "whom", "which", "whose"], "ans": 2},
+            {"q": "He is the writer _____ books have won several awards.", "opts": ["who", "whom", "whose", "which"], "ans": 2},
+            {"q": "The meeting room, _____ we usually hold our discussions, is being renovated.", "opts": ["when", "where", "which", "that"], "ans": 1}
+        ];
+
+        const QUESTIONS_PER_EXAM = 20; // 100 câu / 5 đề = 20 câu/đề
+        const TOTAL_EXAMS = Math.ceil(quizData.length / QUESTIONS_PER_EXAM);
+        let currentExamIndex = 0;
+
+        const container = document.getElementById('questionsContainer');
+        const form = document.getElementById('quizForm');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const scoreText = document.getElementById('scoreText');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const nextExamBtn = document.getElementById('nextExamBtn');
+        const examSelector = document.getElementById('examSelector');
+        const totalQuestionsInfo = document.getElementById('totalQuestionsInfo');
+
+        const letters = ['A', 'B', 'C', 'D'];
+
+        function renderExamSelector() {
+            examSelector.innerHTML = '';
+            for (let i = 0; i < TOTAL_EXAMS; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `px-5 py-2 text-sm font-bold rounded-xl focus:outline-none transition-colors shadow-sm ${i === currentExamIndex ? 'bg-green-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:bg-green-50 hover:text-green-700'}`;
+                btn.textContent = `Đề ${i + 1}`;
+                btn.onclick = () => {
+                    currentExamIndex = i;
+                    renderQuestions();
+                    updateExamSelectorUI();
+                };
+                examSelector.appendChild(btn);
+            }
+        }
+
+        function updateExamSelectorUI() {
+            const buttons = examSelector.querySelectorAll('button');
+            buttons.forEach((btn, idx) => {
+                if (idx === currentExamIndex) {
+                    btn.className = 'px-5 py-2 text-sm font-bold rounded-xl focus:outline-none transition-colors bg-green-600 text-white shadow-md';
+                } else {
+                    btn.className = 'px-5 py-2 text-sm font-bold rounded-xl focus:outline-none transition-colors bg-white text-gray-700 border border-gray-200 hover:bg-green-50 hover:text-green-700 shadow-sm';
+                }
+            });
+        }
+
+        function getCurrentExamQuestions() {
+            const startIndex = currentExamIndex * QUESTIONS_PER_EXAM;
+            const endIndex = Math.min(startIndex + QUESTIONS_PER_EXAM, quizData.length);
+            return {
+                questions: quizData.slice(startIndex, endIndex),
+                startIndex: startIndex
+            };
+        }
+
+        function renderQuestions() {
+            container.innerHTML = '';
+            scoreDisplay.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+            resetBtn.classList.add('hidden');
+            nextExamBtn.classList.add('hidden');
+
+            const { questions, startIndex } = getCurrentExamQuestions();
+            totalQuestionsInfo.textContent = `Đề ${currentExamIndex + 1} (${questions.length} câu) - Từ câu ${startIndex + 1} đến ${startIndex + questions.length}`;
+
+            questions.forEach((q, localIndex) => {
+                const globalIndex = startIndex + localIndex;
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow';
+                questionDiv.id = `q-container-${globalIndex}`;
+
+                const questionTitle = document.createElement('h3');
+                questionTitle.className = 'text-lg font-bold mb-4 text-gray-800 flex items-start';
+                questionTitle.innerHTML = `<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm mr-3 mt-0.5 whitespace-nowrap">Câu ${globalIndex + 1}</span> <span>${q.q}</span>`;
+                questionDiv.appendChild(questionTitle);
+
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'space-y-3 pl-2 md:pl-12';
+
+                q.opts.forEach((opt, optIndex) => {
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center p-3 rounded-xl border border-gray-200 option-label';
+                    label.htmlFor = `q${globalIndex}_opt${optIndex}`;
+                    
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = `question${globalIndex}`;
+                    radio.id = `q${globalIndex}_opt${optIndex}`;
+                    radio.value = optIndex;
+                    radio.className = 'mr-4 h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 cursor-pointer';
+                    
+                    const span = document.createElement('span');
+                    span.className = 'text-gray-700 font-medium text-base w-full cursor-pointer';
+                    span.textContent = `${letters[optIndex]}. ${opt}`;
+
+                    // Add highlight effect on radio change
+                    radio.addEventListener('change', (e) => {
+                        const allLabels = optionsDiv.querySelectorAll('label');
+                        allLabels.forEach(l => {
+                            l.classList.remove('bg-green-50', 'border-green-400');
+                            l.classList.add('border-gray-200');
+                        });
+                        label.classList.remove('border-gray-200');
+                        label.classList.add('bg-green-50', 'border-green-400');
+                    });
+
+                    label.appendChild(radio);
+                    label.appendChild(span);
+                    optionsDiv.appendChild(label);
+                });
+
+                questionDiv.appendChild(optionsDiv);
+
+                // Placeholder for answer feedback
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.id = `feedback-${globalIndex}`;
+                feedbackDiv.className = 'mt-5 p-4 rounded-xl hidden text-sm font-medium';
+                questionDiv.appendChild(feedbackDiv);
+
+                container.appendChild(questionDiv);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const { questions, startIndex } = getCurrentExamQuestions();
+            let correctCount = 0;
+            let answeredCount = 0;
+
+            questions.forEach((q, localIndex) => {
+                const globalIndex = startIndex + localIndex;
+                const selectedOption = document.querySelector(`input[name="question${globalIndex}"]:checked`);
+                const feedbackDiv = document.getElementById(`feedback-${globalIndex}`);
+                const qContainer = document.getElementById(`q-container-${globalIndex}`);
+                
+                // Disable all radio buttons
+                const radios = document.querySelectorAll(`input[name="question${globalIndex}"]`);
+                radios.forEach(radio => radio.disabled = true);
+
+                feedbackDiv.classList.remove('hidden');
+                
+                if (selectedOption) {
+                    answeredCount++;
+                    const userAns = parseInt(selectedOption.value);
+                    if (userAns === q.ans) {
+                        correctCount++;
+                        qContainer.classList.add('border-emerald-300', 'bg-emerald-50/30');
+                        feedbackDiv.className = 'mt-5 p-4 rounded-xl text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200';
+                        feedbackDiv.innerHTML = `<div class="flex items-center"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <strong>Chính xác!</strong></div> <div class="mt-1 ml-7 text-gray-600">Đáp án đúng là: <span class="font-bold text-emerald-700">${letters[q.ans]}. ${q.opts[q.ans]}</span></div>`;
+                    } else {
+                        qContainer.classList.add('border-red-300', 'bg-red-50/30');
+                        feedbackDiv.className = 'mt-5 p-4 rounded-xl text-sm font-medium bg-red-100 text-red-800 border border-red-200';
+                        feedbackDiv.innerHTML = `<div class="flex items-center"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> <strong>Sai rồi.</strong></div> <div class="mt-1 ml-7 text-gray-600">Bạn chọn ${letters[userAns]}. Đáp án đúng phải là: <span class="font-bold text-emerald-700">${letters[q.ans]}. ${q.opts[q.ans]}</span></div>`;
+                    }
+                } else {
+                    qContainer.classList.add('border-amber-300', 'bg-amber-50/30');
+                    feedbackDiv.className = 'mt-5 p-4 rounded-xl text-sm font-medium bg-amber-100 text-amber-800 border border-amber-200';
+                    feedbackDiv.innerHTML = `<div class="flex items-center"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> <strong>Bạn chưa chọn đáp án.</strong></div> <div class="mt-1 ml-7 text-gray-600">Đáp án đúng là: <span class="font-bold text-emerald-700">${letters[q.ans]}. ${q.opts[q.ans]}</span></div>`;
+                }
+            });
+
+            // Calculate score (0.1 point per question correctly answered)
+            let rawScore = correctCount * 0.1; 
+            rawScore = Math.round(rawScore * 10) / 10;
+            
+            // Display result
+            scoreDisplay.classList.remove('hidden');
+            scoreText.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-emerald-100 text-center">
+                        <span class="block text-gray-500 text-xs uppercase tracking-wider mb-1">Số câu đúng</span>
+                        <span class="text-2xl font-black text-emerald-600">${correctCount}<span class="text-lg text-gray-400">/${questions.length}</span></span>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-emerald-100 text-center">
+                        <span class="block text-gray-500 text-xs uppercase tracking-wider mb-1">Điểm số</span>
+                        <span class="text-2xl font-black text-blue-600">${rawScore}<span class="text-lg text-gray-400"> điểm</span></span>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow-sm border border-emerald-100 text-center">
+                        <span class="block text-gray-500 text-xs uppercase tracking-wider mb-1">Đã trả lời</span>
+                        <span class="text-2xl font-black text-gray-700">${answeredCount}<span class="text-lg text-gray-400">/${questions.length}</span></span>
+                    </div>
+                </div>
+            `;
+
+            // Toggle buttons
+            submitBtn.classList.add('hidden');
+            resetBtn.classList.remove('hidden');
+            
+            // Show next exam button if not on the last exam
+            if (currentExamIndex < TOTAL_EXAMS - 1) {
+                nextExamBtn.classList.remove('hidden');
+            }
+
+            // Scroll to top to see score
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        resetBtn.addEventListener('click', () => {
+            renderQuestions();
+        });
+        
+        nextExamBtn.addEventListener('click', () => {
+            if (currentExamIndex < TOTAL_EXAMS - 1) {
+                currentExamIndex++;
+                renderExamSelector();
+                renderQuestions();
+            }
+        });
+
+        // Initialize
+        renderExamSelector();
+        renderQuestions();
+
+    </script>
+</body>
+</html>
